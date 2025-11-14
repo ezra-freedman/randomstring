@@ -22,6 +22,7 @@
             z-index: 0;
             background-color: #030712; /* bg-gray-950 */
             cursor: pointer;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         }
         /* Position UI elements on top */
         .ui-container {
@@ -41,6 +42,26 @@
         .ui-container a, .ui-container h1 {
             pointer-events: all; /* Re-enable pointer events for links/logo */
         }
+        /* Terminal wrapper for positioning */
+        .terminal-wrapper {
+            position: relative;
+        }
+        /* Gradient overlay for terminal output */
+        #terminal-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2rem;
+            background: linear-gradient(to bottom, #030712, transparent);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1;
+        }
+        #terminal-gradient.show {
+            opacity: 1;
+        }
     </style>
     <!-- Import Inter font from Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -54,29 +75,20 @@
 
     <!-- The minimalist UI overlay -->
     <div class="ui-container">
-        <!-- Header -->
         <header class="flex justify-between items-center">
             <h1 class="text-2xl font-bold tracking-tighter text-gray-100">
                 randomstring
             </h1>
-            <a href="#" class="text-base font-normal text-gray-300 hover:text-white transition-colors">
-                Contact
-            </a>
-        </header>
-        
-        <!-- Footer / Tagline / Terminal -->
+        </header>        
         <footer class="w-full">
-            <div id="terminal-output" class="text-gray-500 font-mono text-sm max-h-32 overflow-y-auto mb-2 pointer-events-auto" style="white-space: pre-wrap;">
-                <!-- Command output will appear here -->
+            <div class="terminal-wrapper">
+                <div id="terminal-gradient"></div>
+                <div id="terminal-output" class="text-gray-500 font-mono text-sm max-h-32 overflow-y-auto mb-2 pointer-events-auto" style="white-space: pre-wrap;"></div>
             </div>
             <div class="flex items-center space-x-2 font-mono pointer-events-auto border-t border-gray-800 pt-3">
                 <span class="text-lg text-gray-400">&gt;</span>
                 <input type="text" id="terminal-input" class="bg-transparent border-none text-gray-300 text-base w-full focus:outline-none placeholder-gray-600 placeholder:text-sm" placeholder="Type /help for commands" />
             </div>
-            
-            <p class="text-lg font-light text-gray-400 mt-6">
-                Connecting the pieces.
-            </p>
         </footer>
     </div>
 
@@ -394,13 +406,52 @@
                 Math.random() * height * 0.8 + height * 0.1
             );
         }
-        
+
         animate(); // Start the simulation
 
         // --- Terminal Logic ---
-        
+
         const terminalInput = document.getElementById('terminal-input');
         const terminalOutput = document.getElementById('terminal-output');
+
+        // --- Dynamic Canvas Masking for Terminal ---
+
+        function updateCanvasMask() {
+            const footer = terminalOutput.closest('footer');
+            const terminalGradient = document.getElementById('terminal-gradient');
+
+            // Check if terminal has scrollable content
+            if (terminalOutput.scrollHeight > terminalOutput.clientHeight) {
+                terminalGradient.classList.add('show');
+            } else {
+                terminalGradient.classList.remove('show');
+            }
+
+            // Calculate terminal output and input heights (use visible height, not scroll height)
+            const outputHeight = terminalOutput.offsetHeight;
+            const inputArea = terminalInput.closest('.flex');
+            const inputHeight = inputArea ? inputArea.offsetHeight : 0;
+
+            // Total terminal height (output + input + spacing)
+            const totalTerminalHeight = outputHeight + inputHeight + 20; // 20px for mb-2 + pt-3
+
+            // Calculate the Y position where the mask should start (from bottom)
+            const maskStartY = height - totalTerminalHeight - 40; // 40px for footer padding (2.5rem)
+
+            // Create a clip-path that cuts out the terminal area at the bottom
+            const clipPath = `polygon(0 0, 100% 0, 100% ${maskStartY}px, 0 ${maskStartY}px)`;
+            canvas.style.clipPath = clipPath;
+        }
+
+        // Update mask on terminal changes
+        const terminalObserver = new MutationObserver(updateCanvasMask);
+        terminalObserver.observe(terminalOutput, { childList: true, subtree: true, characterData: true });
+
+        // Update mask on resize
+        window.addEventListener('resize', updateCanvasMask);
+
+        // Initial mask update
+        updateCanvasMask();
 
         const commands = {
             '/help': 'Available commands:\n  /help     - Show this message\n  /contact  - Display contact information\n  /ls       - List recent blog posts\n  /clear    - Clear the terminal output',
@@ -413,8 +464,9 @@
             const cmd = command.toLowerCase().trim();
             let output = '';
 
-            // Echo the command
-            terminalOutput.innerHTML += `\n<span class="text-gray-400">> ${command}</span>\n`;
+            // Echo the command (add newline before if there's existing content)
+            const prefix = terminalOutput.innerHTML.length > 0 ? '\n' : '';
+            terminalOutput.innerHTML += `${prefix}<span class="text-gray-400">> ${command}</span>\n`;
 
             if (cmd === '/clear') {
                 terminalOutput.innerHTML = 'Terminal cleared.';
