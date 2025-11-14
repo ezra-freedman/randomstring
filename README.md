@@ -16,10 +16,11 @@ randomstring is a single-page web application featuring:
 
 ### String Simulation
 - Click anywhere to spawn new string segments
-- Drag string endpoints to manipulate them
+- Drag string endpoints to manipulate them (cursor changes to indicate draggable points)
 - Strings automatically join when endpoints get close
 - Realistic physics with friction, bounce, and momentum
-- Responsive string length (8% of screen dimension)
+- Responsive string length scales with screen size (8% of smaller dimension, min 30px)
+- Smart click detection prevents accidental spawns during drag operations
 
 ### Terminal Commands
 - `/help` - Show available commands
@@ -28,10 +29,12 @@ randomstring is a single-page web application featuring:
 - `/clear` - Clear terminal output
 
 ### UI/UX
-- Ghost text autocomplete (press Tab to complete)
-- Gradient overlay for smooth scrolling experience
-- Minimalist dark theme with Inter font
-- Mobile-friendly responsive design
+- **Smart Cursor Feedback**: Default cursor, grab cursor on hover, grabbing cursor while dragging
+- **Terminal Autocomplete**: Ghost text hints with Tab completion for commands
+- **Dynamic Canvas Masking**: Strings seamlessly hide behind terminal area as it expands
+- **Gradient Overlay**: Smooth fade effect when terminal content is scrollable
+- **Minimalist Design**: Dark theme with Inter font and clean interface
+- **Mobile-Friendly**: Responsive string length and touch-compatible interactions
 
 ## Technology
 

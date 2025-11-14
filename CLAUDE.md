@@ -25,22 +25,39 @@ This is a single-page interactive web application called "randomstring" that fea
    - Canvas (z-index: 0): Full-screen background for animation
    - UI overlay (z-index: 10): Header, footer, and terminal with `pointer-events: none` on container, selectively enabled on interactive elements
 
-3. **Terminal System** (lines 400-447): Simple command processor supporting `/help`, `/contact`, `/ls`, and `/clear`
+3. **Terminal System**: Command processor with autocomplete supporting `/help`, `/contact`, `/ls`, and `/clear`
+   - Ghost text autocomplete hints
+   - Tab completion
+   - Dynamic terminal output with gradient overlay when scrollable
+
+4. **Canvas Masking System**: Dynamic clip-path updates based on terminal content height
+   - MutationObserver watches terminal changes
+   - Uses `offsetHeight` for visible terminal area (not `scrollHeight`)
+   - Recalculates on window resize
+
+5. **Cursor System**: Context-aware cursor states
+   - Default cursor for empty space
+   - Grab cursor when hovering near draggable endpoints (within `DRAG_RADIUS`)
+   - Grabbing cursor during active drag
 
 ## Key Simulation Logic
 
 - **String Creation**: Click spawns new string segments (2 points + 1 stick)
 - **Dragging**: Drag string endpoints to move them; releasing near another endpoint joins clusters
+  - `isDragging` only set to true when actually dragging a point (not just mouse movement)
+  - Prevents accidental spawn blocking
 - **Auto-joining**: Endpoints within `JOIN_THRESHOLD` (20px) automatically connect
 - **Collision/Joining**: When clusters join, a new stick is created, points are merged into one cluster, and joined endpoints lose their `isEndpoint` status
 
 ## Configuration Constants
 
-Located at lines 88-96:
-- `STICK_LENGTH`: Segment length (30px)
+- `MIN_STICK_LENGTH`: Minimum segment length (30px)
+- `STICK_LENGTH`: Dynamic segment length calculated as 8% of smaller screen dimension (min 30px)
 - `DRAG_RADIUS`: Click detection radius (15px)
 - `JOIN_THRESHOLD`: Auto-join distance (20px)
 - `FRICTION`, `BOUNCE`, `MAX_SPEED`: Physics parameters
+
+The `calculateStickLength()` function recalculates string length on resize for responsive scaling.
 
 ## Development
 
