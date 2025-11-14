@@ -21,7 +21,7 @@
             height: 100%;
             z-index: 0;
             background-color: #030712; /* bg-gray-950 */
-            cursor: pointer;
+            cursor: default;
             clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         }
         /* Position UI elements on top */
@@ -101,7 +101,7 @@
 
         // --- Configuration ---
         const MIN_STICK_LENGTH = 30; // Minimum stick length for mobile
-        let STICK_LENGTH; // Length of a single string segment (calculated based on screen size)
+        let STICK_LENGTH = MIN_STICK_LENGTH; // Length of a single string segment (calculated based on screen size)
         const DRAG_RADIUS = 15; // How close to click to drag a point
         const JOIN_THRESHOLD = 20; // How close points must be to join
         const FRICTION = 0.99;
@@ -117,9 +117,7 @@
             // Scale stick length based on screen size
             // Use ~8% of the smaller dimension (width or height)
             const minDimension = Math.min(width, height);
-            const calculated = Math.max(MIN_STICK_LENGTH, minDimension * 0.08);
-            console.log(`Screen: ${width}x${height}, Min dimension: ${minDimension}, Stick length: ${calculated.toFixed(1)}px`);
-            return calculated;
+            return Math.max(MIN_STICK_LENGTH, minDimension * 0.08);
         }
         let points = [];
         let sticks = [];
@@ -354,6 +352,7 @@
             // Check if we're grabbing a point
             draggedPoint = getClosestPoint(mouse.x, mouse.y, DRAG_RADIUS);
             if (draggedPoint) {
+                canvas.style.cursor = 'grabbing';
                 draggedPoint.pinned = true;
                 draggedPoint.oldx = draggedPoint.x; // Stop momentum
                 draggedPoint.oldy = draggedPoint.y;
@@ -363,48 +362,60 @@
         canvas.addEventListener('mousemove', (e) => {
             mouse.x = e.clientX;
             mouse.y = e.clientY;
-            if (mouse.down) {
+            if (mouse.down && draggedPoint) {
                 isDragging = true;
             }
-            
+
             if (draggedPoint) {
                 draggedPoint.x = mouse.x;
                 draggedPoint.y = mouse.y;
+            }
+
+            // Update cursor based on proximity to draggable points
+            if (!mouse.down) {
+                const nearPoint = getClosestPoint(mouse.x, mouse.y, DRAG_RADIUS);
+                canvas.style.cursor = nearPoint ? 'grab' : 'default';
             }
         });
 
         canvas.addEventListener('mouseup', (e) => {
             mouse.down = false;
-            
+
             if (draggedPoint) {
                 draggedPoint.pinned = false;
-                
+
                 // Check for manual joining
                 let joinTarget = getClosestPoint(mouse.x, mouse.y, JOIN_THRESHOLD);
                 if (joinTarget && joinTarget !== draggedPoint && joinTarget.cluster !== draggedPoint.cluster) {
                     // We found a point on another string to join to!
                     const clusterA = draggedPoint.cluster;
                     const clusterB = joinTarget.cluster;
-                    
+
                     const dx = draggedPoint.x - joinTarget.x;
                     const dy = draggedPoint.y - joinTarget.y;
                     const dist = Math.sqrt(dx*dx + dy*dy);
 
                     joinClusters(clusterA, draggedPoint, clusterB, joinTarget, dist);
-                    
+
                     // Remove clusterB
                     const index = stringClusters.indexOf(clusterB);
                     if(index > -1) {
                         stringClusters.splice(index, 1);
                     }
                 }
-                
+
                 draggedPoint = null;
             } else if (!isDragging) {
                 // This was a click, not a drag. Spawn a new string.
                 spawnString(mouse.x, mouse.y);
+                // After spawning, set cursor to default (don't immediately show grab)
+                canvas.style.cursor = 'default';
+            } else {
+                // Update cursor after release for drag operations
+                const nearPoint = getClosestPoint(mouse.x, mouse.y, DRAG_RADIUS);
+                canvas.style.cursor = nearPoint ? 'grab' : 'default';
             }
-            
+
             isDragging = false;
         });
         
