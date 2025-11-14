@@ -87,7 +87,10 @@
             </div>
             <div class="flex items-center space-x-2 font-mono pointer-events-auto border-t border-gray-800 pt-3">
                 <span class="text-lg text-gray-400">&gt;</span>
-                <input type="text" id="terminal-input" class="bg-transparent border-none text-gray-300 text-base w-full focus:outline-none placeholder-gray-600 placeholder:text-sm" placeholder="Type /help for commands" />
+                <div class="relative flex-1">
+                    <input type="text" id="terminal-input" class="bg-transparent border-none text-gray-300 text-base w-full focus:outline-none placeholder-gray-600 placeholder:text-sm" placeholder="Type /help for commands" />
+                    <div id="autocomplete-hint" class="absolute top-0 left-0 text-gray-600 text-base pointer-events-none" style="white-space: nowrap;"></div>
+                </div>
             </div>
         </footer>
     </div>
@@ -97,7 +100,8 @@
         const ctx = canvas.getContext('2d');
 
         // --- Configuration ---
-        const STICK_LENGTH = 30; // Length of a single string segment
+        const MIN_STICK_LENGTH = 30; // Minimum stick length for mobile
+        let STICK_LENGTH; // Length of a single string segment (calculated based on screen size)
         const DRAG_RADIUS = 15; // How close to click to drag a point
         const JOIN_THRESHOLD = 20; // How close points must be to join
         const FRICTION = 0.99;
@@ -108,6 +112,15 @@
         // ---------------------
 
         let width, height;
+
+        function calculateStickLength() {
+            // Scale stick length based on screen size
+            // Use ~8% of the smaller dimension (width or height)
+            const minDimension = Math.min(width, height);
+            const calculated = Math.max(MIN_STICK_LENGTH, minDimension * 0.08);
+            console.log(`Screen: ${width}x${height}, Min dimension: ${minDimension}, Stick length: ${calculated.toFixed(1)}px`);
+            return calculated;
+        }
         let points = [];
         let sticks = [];
         let stringClusters = []; // To track which strings are connected
@@ -299,6 +312,7 @@
         function resizeHandler() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
+            STICK_LENGTH = calculateStickLength();
         }
 
         function getClosestPoint(x, y, maxDist) {
@@ -413,6 +427,7 @@
 
         const terminalInput = document.getElementById('terminal-input');
         const terminalOutput = document.getElementById('terminal-output');
+        const autocompleteHint = document.getElementById('autocomplete-hint');
 
         // --- Dynamic Canvas Masking for Terminal ---
 
@@ -482,6 +497,28 @@
             terminalOutput.scrollTop = terminalOutput.scrollHeight;
         }
 
+        // Autocomplete logic
+        function getAutocomplete(input) {
+            if (!input.startsWith('/')) return null;
+            const availableCommands = Object.keys(commands);
+            const matches = availableCommands.filter(cmd => cmd.startsWith(input.toLowerCase()));
+            return matches.length === 1 ? matches[0] : null;
+        }
+
+        function updateAutocompleteHint() {
+            const input = terminalInput.value;
+            const match = getAutocomplete(input);
+
+            if (match && input.length > 0) {
+                // Show the completion hint
+                autocompleteHint.textContent = input + match.substring(input.length);
+            } else {
+                autocompleteHint.textContent = '';
+            }
+        }
+
+        terminalInput.addEventListener('input', updateAutocompleteHint);
+
         terminalInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -489,6 +526,14 @@
                 if (command.trim() === '') return; // Do nothing if input is empty
                 processCommand(command);
                 terminalInput.value = '';
+                autocompleteHint.textContent = '';
+            } else if (e.key === 'Tab') {
+                e.preventDefault();
+                const match = getAutocomplete(terminalInput.value);
+                if (match) {
+                    terminalInput.value = match;
+                    autocompleteHint.textContent = '';
+                }
             }
         });
 
