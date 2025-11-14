@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>randomstring</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Use Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Hide scrollbars */
+        }
+        /* Position canvas as a fixed background */
+        #string-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background-color: #030712; /* bg-gray-950 */
+            cursor: pointer;
+        }
+        /* Position UI elements on top */
+        .ui-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none; /* Allow clicks to pass through to canvas */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2.5rem; /* p-10 */
+        }
+        /* Make links clickable */
+        .ui-container a, .ui-container h1 {
+            pointer-events: all; /* Re-enable pointer events for links/logo */
+        }
+    </style>
+    <!-- Import Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-950">
+
+    <!-- The canvas for the string animation -->
+    <canvas id="string-canvas"></canvas>
+
+    <!-- The minimalist UI overlay -->
+    <div class="ui-container">
+        <!-- Header -->
+        <header class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold tracking-tighter text-gray-100">
+                randomstring
+            </h1>
+            <a href="#" class="text-base font-normal text-gray-300 hover:text-white transition-colors">
+                Contact
+            </a>
+        </header>
+        
+        <!-- Footer / Tagline / Terminal -->
+        <footer class="w-full">
+            <div id="terminal-output" class="text-gray-500 font-mono text-sm max-h-32 overflow-y-auto mb-2 pointer-events-auto" style="white-space: pre-wrap;">
+                <!-- Command output will appear here -->
+            </div>
+            <div class="flex items-center space-x-2 font-mono pointer-events-auto border-t border-gray-800 pt-3">
+                <span class="text-lg text-gray-400">&gt;</span>
+                <input type="text" id="terminal-input" class="bg-transparent border-none text-gray-300 text-base w-full focus:outline-none placeholder-gray-600 placeholder:text-sm" placeholder="Type /help for commands" />
+            </div>
+            
+            <p class="text-lg font-light text-gray-400 mt-6">
+                Connecting the pieces.
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('string-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // --- Configuration ---
+        const STICK_LENGTH = 30; // Length of a single string segment
+        const DRAG_RADIUS = 15; // How close to click to drag a point
+        const JOIN_THRESHOLD = 20; // How close points must be to join
+        const FRICTION = 0.99;
+        const BOUNCE = 0.9;
+        const MAX_SPEED = 10; // Max random drift speed
+        const STRING_COLOR = 'rgba(255, 255, 255, 0.7)';
+        const STRING_WIDTH = 1.5;
+        // ---------------------
+
+        let width, height;
+        let points = [];
+        let sticks = [];
+        let stringClusters = []; // To track which strings are connected
+        let draggedPoint = null;
+        let isDragging = false;
+        let mouse = { x: 0, y: 0, down: false };
+
+        class Point {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.oldx = x - (Math.random() - 0.5) * MAX_SPEED;
+                this.oldy = y - (Math.random() - 0.5) * MAX_SPEED;
+                this.pinned = false;
+                this.cluster = null; // Which string cluster it belongs to
+                this.isEndpoint = true; // Is it an end of a chain?
+            }
+        }
+
+        class Stick {
+            constructor(p0, p1, length) {
+                this.p0 = p0;
+                this.p1 = p1;
+                this.length = length;
+            }
+        }
+
+        class StringCluster {
+            constructor(p0, p1, stick) {
+                this.points = [p0, p1];
+                this.sticks = [stick];
+                p0.cluster = this;
+                p1.cluster = this;
+            }
+        }
+
+        // --- Core Simulation ---
+
+        function updatePoints() {
+            for (const p of points) {
+                if (p.pinned) continue;
+
+                let vx = (p.x - p.oldx) * FRICTION;
+                let vy = (p.y - p.oldy) * FRICTION;
+
+                p.oldx = p.x;
+                p.oldy = p.y;
+
+                p.x += vx;
+                p.y += vy;
+                
+                // Add a tiny random drift
+                p.x += (Math.random() - 0.5) * 0.2;
+                p.y += (Math.random() - 0.5) * 0.2;
+            }
+        }
+
+        function constrainPoints() {
+            for (const p of points) {
+                if (p.pinned) continue;
+
+                let vx = (p.x - p.oldx) * FRICTION;
+                let vy = (p.y - p.oldy) * FRICTION;
+
+                if (p.x > width) {
+                    p.x = width;
+                    p.oldx = p.x + vx * BOUNCE;
+                } else if (p.x < 0) {
+                    p.x = 0;
+                    p.oldx = p.x + vx * BOUNCE;
+                }
+                if (p.y > height) {
+                    p.y = height;
+                    p.oldy = p.y + vy * BOUNCE;
+                } else if (p.y < 0) {
+                    p.y = 0;
+                    p.oldy = p.y + vy * BOUNCE;
+                }
+            }
+        }
+
+        function updateSticks() {
+            // Run multiple iterations to satisfy constraints
+            for (let i = 0; i < 5; i++) {
+                for (const s of sticks) {
+                    const dx = s.p1.x - s.p0.x;
+                    const dy = s.p1.y - s.p0.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const difference = s.length - distance;
+                    const percent = difference / distance / 2;
+                    const offsetX = dx * percent;
+                    const offsetY = dy * percent;
+
+                    if (!s.p0.pinned) {
+                        s.p0.x -= offsetX;
+                        s.p0.y -= offsetY;
+                    }
+                    if (!s.p1.pinned) {
+                        s.p1.x += offsetX;
+                        s.p1.y += offsetY;
+                    }
+                }
+            }
+        }
+
+        function checkCollisions() {
+            // Check endpoints of different clusters for auto-joining
+            for (let i = 0; i < stringClusters.length; i++) {
+                const clusterA = stringClusters[i];
+                for (let j = i + 1; j < stringClusters.length; j++) {
+                    const clusterB = stringClusters[j];
+                    
+                    for (const pA of clusterA.points) {
+                        if (!pA.isEndpoint) continue;
+                        
+                        for (const pB of clusterB.points) {
+                            if (!pB.isEndpoint) continue;
+
+                            const dx = pA.x - pB.x;
+                            const dy = pA.y - pB.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+
+                            if (dist < JOIN_THRESHOLD) {
+                                // Join the clusters!
+                                joinClusters(clusterA, pA, clusterB, pB, dist);
+                                // Remove clusterB and restart check
+                                stringClusters.splice(j, 1);
+                                return; // Restart check as arrays were modified
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        function joinClusters(clusterA, pA, clusterB, pB, dist) {
+            // Create a new stick
+            const newStick = new Stick(pA, pB, dist);
+            sticks.push(newStick);
+            
+            // Merge points and sticks
+            clusterA.points.push(...clusterB.points);
+            clusterA.sticks.push(...clusterB.sticks, newStick);
+            
+            // Update cluster reference for all points from B
+            clusterB.points.forEach(p => {
+                p.cluster = clusterA;
+            });
+            
+            // These points are no longer endpoints of their *original* chain
+            pA.isEndpoint = false;
+            pB.isEndpoint = false;
+        }
+
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+
+            ctx.strokeStyle = STRING_COLOR;
+            ctx.lineWidth = STRING_WIDTH;
+
+            for (const s of sticks) {
+                ctx.beginPath();
+                ctx.moveTo(s.p0.x, s.p0.y);
+                ctx.lineTo(s.p1.x, s.p1.y);
+                ctx.stroke();
+            }
+
+            // Optional: Draw points for debugging/style
+            // for (const p of points) {
+            //     ctx.fillStyle = p.isEndpoint ? 'red' : 'white';
+            //     ctx.beginPath();
+            //     ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+            //     ctx.fill();
+            // }
+        }
+
+        function animate() {
+            updatePoints();
+            constrainPoints();
+            updateSticks();
+            checkCollisions(); // Check for auto-joins
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        // --- Event Handlers ---
+
+        function resizeHandler() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        function getClosestPoint(x, y, maxDist) {
+            let closest = null;
+            let minDist = maxDist;
+            for (const p of points) {
+                // Only allow dragging endpoints
+                if (!p.isEndpoint) continue; 
+                
+                const dx = p.x - x;
+                const dy = p.y - y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = p;
+                }
+            }
+            return closest;
+        }
+
+        function spawnString(x, y) {
+            const p0 = new Point(x, y);
+            const p1 = new Point(x + (Math.random() - 0.5) * 40, y + (Math.random() - 0.5) * 40);
+            const stick = new Stick(p0, p1, STICK_LENGTH);
+            
+            points.push(p0, p1);
+            sticks.push(stick);
+            
+            const cluster = new StringCluster(p0, p1, stick);
+            stringClusters.push(cluster);
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            mouse.down = true;
+            isDragging = false; // Reset drag flag
+
+            // Check if we're grabbing a point
+            draggedPoint = getClosestPoint(mouse.x, mouse.y, DRAG_RADIUS);
+            if (draggedPoint) {
+                draggedPoint.pinned = true;
+                draggedPoint.oldx = draggedPoint.x; // Stop momentum
+                draggedPoint.oldy = draggedPoint.y;
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            if (mouse.down) {
+                isDragging = true;
+            }
+            
+            if (draggedPoint) {
+                draggedPoint.x = mouse.x;
+                draggedPoint.y = mouse.y;
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            mouse.down = false;
+            
+            if (draggedPoint) {
+                draggedPoint.pinned = false;
+                
+                // Check for manual joining
+                let joinTarget = getClosestPoint(mouse.x, mouse.y, JOIN_THRESHOLD);
+                if (joinTarget && joinTarget !== draggedPoint && joinTarget.cluster !== draggedPoint.cluster) {
+                    // We found a point on another string to join to!
+                    const clusterA = draggedPoint.cluster;
+                    const clusterB = joinTarget.cluster;
+                    
+                    const dx = draggedPoint.x - joinTarget.x;
+                    const dy = draggedPoint.y - joinTarget.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+
+                    joinClusters(clusterA, draggedPoint, clusterB, joinTarget, dist);
+                    
+                    // Remove clusterB
+                    const index = stringClusters.indexOf(clusterB);
+                    if(index > -1) {
+                        stringClusters.splice(index, 1);
+                    }
+                }
+                
+                draggedPoint = null;
+            } else if (!isDragging) {
+                // This was a click, not a drag. Spawn a new string.
+                spawnString(mouse.x, mouse.y);
+            }
+            
+            isDragging = false;
+        });
+        
+        // --- Initialization ---
+        
+        window.addEventListener('resize', resizeHandler);
+        resizeHandler(); // Set initial size
+        
+        // Spawn a few initial strings
+        for(let i = 0; i < 15; i++) {
+            spawnString(
+                Math.random() * width * 0.8 + width * 0.1, 
+                Math.random() * height * 0.8 + height * 0.1
+            );
+        }
+        
+        animate(); // Start the simulation
+
+        // --- Terminal Logic ---
+        
+        const terminalInput = document.getElementById('terminal-input');
+        const terminalOutput = document.getElementById('terminal-output');
+
+        const commands = {
+            '/help': 'Available commands:\n  /help     - Show this message\n  /contact  - Display contact information\n  /ls       - List recent blog posts\n  /clear    - Clear the terminal output',
+            '/contact': 'Email: contact@randomstring.com\nPhone: (555) 123-4567\nOffice: 123 Innovation Dr, Tech City',
+            '/ls': 'No recent posts found.\n\n(This is a demo. In a real app, this would fetch data.)\n- 2025-11-10: The Future of Connected Data\n- 2025-10-22: Chaos Theory in Consulting',
+            '/clear': ''
+        };
+
+        function processCommand(command) {
+            const cmd = command.toLowerCase().trim();
+            let output = '';
+
+            // Echo the command
+            terminalOutput.innerHTML += `\n<span class="text-gray-400">> ${command}</span>\n`;
+
+            if (cmd === '/clear') {
+                terminalOutput.innerHTML = 'Terminal cleared.';
+            } else if (commands[cmd]) {
+                output = commands[cmd];
+                terminalOutput.innerHTML += `<span class="text-gray-300">${output}</span>`;
+            } else {
+                output = `Command not found: ${command}\nType /help for a list of commands.`;
+                terminalOutput.innerHTML += `<span class="text-yellow-500">${output}</span>`;
+            }
+
+            // Scroll to bottom
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+        terminalInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const command = terminalInput.value;
+                if (command.trim() === '') return; // Do nothing if input is empty
+                processCommand(command);
+                terminalInput.value = '';
+            }
+        });
+
+        // Welcome message
+        // terminalOutput.innerHTML = 'Welcome to the randomstring console. Type /help for commands.';
+
+        // Focus the input field on page load
+        terminalInput.focus();
+
+    </script>
+
+</body>
+</html>
