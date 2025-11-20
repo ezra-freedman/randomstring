@@ -24,11 +24,15 @@
             <h1 class="text-2xl font-bold tracking-tighter text-gray-100">
                 randomstring
             </h1>
+            <nav class="flex space-x-6 pointer-events-auto">
+                <a href="#" id="about-link" class="text-sm text-gray-400 hover:text-gray-100 transition-colors">About</a>
+                <a href="#" id="contact-link" class="text-sm text-gray-400 hover:text-gray-100 transition-colors">Contact</a>
+            </nav>
         </header>        
         <footer class="w-full">
             <div class="terminal-wrapper">
                 <div id="terminal-gradient"></div>
-                <div id="terminal-output" class="text-gray-500 font-mono text-sm max-h-32 overflow-y-auto mb-2 pointer-events-auto" style="white-space: pre-wrap;"></div>
+                <div id="terminal-output" class="text-gray-500 font-mono text-sm overflow-y-auto mb-2 pointer-events-auto" style="white-space: pre-wrap; max-height: 70vh;"></div>
             </div>
             <div class="flex items-center space-x-2 font-mono pointer-events-auto border-t border-gray-800 pt-3">
                 <span class="text-lg text-gray-400">&gt;</span>
@@ -40,8 +44,14 @@
         </footer>
     </div>
 
-    <!-- Main script -->
+    <!-- Marked.js for markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+
+    <!-- Modular JavaScript files -->
     <script src="script.js"></script>
+    <script src="markdown.js"></script>
+    <script src="terminal.js"></script>
+    <script src="posts.js"></script>
 
 </body>
 </html>
