@@ -9,7 +9,7 @@ const JOIN_THRESHOLD = 20; // How close points must be to join
 const FRICTION = 0.99;
 const BOUNCE = 0.9;
 const MAX_SPEED = 10; // Max random drift speed
-const STRING_COLOR = 'rgba(255, 255, 255, 0.7)';
+let STRING_COLOR = 'rgba(255, 255, 255, 0.7)';
 const STRING_WIDTH = 1.5;
 // ---------------------
 
@@ -339,3 +339,16 @@ for(let i = 0; i < 15; i++) {
 }
 
 animate(); // Start the simulation
+
+// Color picker functionality
+const colorPicker = document.getElementById('color-picker');
+if (colorPicker) {
+    colorPicker.addEventListener('input', (e) => {
+        const hex = e.target.value;
+        // Convert hex to rgba with 0.7 opacity
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        STRING_COLOR = `rgba(${r}, ${g}, ${b}, 0.7)`;
+    });
+}

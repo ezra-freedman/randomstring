@@ -21,9 +21,24 @@
     <!-- The minimalist UI overlay -->
     <div class="ui-container">
         <header class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold tracking-tighter text-gray-100">
-                randomstring
-            </h1>
+            <div class="flex items-center space-x-3">
+                <h1 class="text-2xl font-bold tracking-tighter text-gray-100">
+                    randomstring
+                </h1>
+                <input type="color" id="color-picker" value="#ffffff" list="color-presets" class="pointer-events-auto w-7 h-7 rounded border border-gray-700 bg-transparent cursor-pointer">
+                <datalist id="color-presets">
+                    <option value="#ffffff">White</option>
+                    <option value="#ff0000">Red</option>
+                    <option value="#ff6b35">Orange</option>
+                    <option value="#ffd700">Gold</option>
+                    <option value="#00ff00">Green</option>
+                    <option value="#00ffff">Cyan</option>
+                    <option value="#0099ff">Blue</option>
+                    <option value="#9933ff">Purple</option>
+                    <option value="#ff00ff">Magenta</option>
+                    <option value="#ff69b4">Pink</option>
+                </datalist>
+            </div>
             <nav class="flex space-x-6 pointer-events-auto">
                 <a href="#" id="posts-link" class="text-sm text-gray-400 hover:text-gray-100 transition-colors">Posts</a>
                 <a href="#" id="about-link" class="text-sm text-gray-400 hover:text-gray-100 transition-colors">About</a>
