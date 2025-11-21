@@ -109,10 +109,21 @@ async function loadArticle(postIndex) {
         const content = markdownToTerminal(markdown);
         articleOutput += `<span class="text-gray-300">${content}</span>\n\n`;
         articleOutput += `<span class="text-gray-500">─────────────────────────────────────</span>\n`;
-        articleOutput += `<span class="text-yellow-400">Type /back to return to the blog list</span>`;
+        articleOutput += `<span class="text-yellow-400"><a href="#" id="back-link" class="text-blue-400 hover:text-blue-300 underline cursor-pointer">[Back to posts]</a> or type /back</span>`;
 
         terminalOutput.innerHTML = articleOutput;
         terminalOutput.scrollTop = 0; // Scroll to top for article reading
+
+        // Add click handler for the back link
+        setTimeout(() => {
+            const backLink = document.getElementById('back-link');
+            if (backLink) {
+                backLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    processCommand('/back');
+                });
+            }
+        }, 100);
 
         // Update the canvas mask to hide the gradient overlay for articles
         updateCanvasMask();

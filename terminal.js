@@ -14,10 +14,10 @@ let currentArticle = null;
 
 // Available commands
 const commands = {
-    '/help': 'Available commands:\n  /help     - Show this message\n  /about    - Learn about randomstring\n  /contact  - Display contact information\n  /ls       - List recent blog posts\n  /back     - Go back to blog list (when reading an article)\n  /spawn    - Spawn a new random string\n  /clear    - Clear the terminal output',
+    '/help': 'Available commands:\n  /help     - Show this message\n  /about    - Learn about randomstring\n  /contact  - Display contact information\n  /posts    - View blog posts\n  /back     - Go back to blog list (when reading an article)\n  /spawn    - Spawn a new random string\n  /clear    - Clear the terminal output',
     '/about': 'randomstring is an interactive physics-based string simulation.\n\nClick anywhere to spawn new strings. Drag endpoints to connect them.\nStrings automatically join when endpoints get close enough.\n\nBuilt with vanilla JavaScript and HTML5 Canvas.',
-    '/contact': 'Email: contact@randomstring.com\nPhone: (555) 123-4567\nOffice: 123 Innovation Dr, Tech City',
-    '/ls': '',
+    '/contact': '',
+    '/posts': '',
     '/back': '',
     '/spawn': '',
     '/clear': ''
@@ -44,18 +44,20 @@ function processCommand(command) {
         if (currentView === 'article') {
             currentView = 'list';
             currentArticle = null;
-            // Re-run /ls command
-            processCommand('/ls');
+            // Re-run /posts command
+            processCommand('/posts');
             // Update canvas mask to potentially show gradient again
             updateCanvasMask();
             return;
         } else {
-            terminalOutput.innerHTML += `<span class="text-yellow-500">You're already at the blog list. Use /ls to see posts.</span>`;
+            terminalOutput.innerHTML += `<span class="text-yellow-500">You're already at the blog list. Use /posts to see posts.</span>`;
         }
-    } else if (cmd === '/ls') {
+    } else if (cmd === '/posts') {
         currentView = 'list';
         currentArticle = null;
         displayBlogList();
+    } else if (cmd === '/contact') {
+        displayContactInfo();
     } else if (commands[cmd]) {
         output = commands[cmd];
         terminalOutput.innerHTML += `<span class="text-gray-300">${output}</span>`;
@@ -197,6 +199,11 @@ function triggerCommand(command) {
 }
 
 // Wire up navigation links
+document.getElementById('posts-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    triggerCommand('/posts');
+});
+
 document.getElementById('about-link').addEventListener('click', (e) => {
     e.preventDefault();
     triggerCommand('/about');
@@ -209,6 +216,25 @@ document.getElementById('contact-link').addEventListener('click', (e) => {
 
 // Focus the input field on page load
 terminalInput.focus();
+
+// Display contact information
+function displayContactInfo() {
+    let contactOutput = '\n';
+
+    // Eric's contact info
+    contactOutput += '<span class="text-cyan-400 font-bold text-lg">Eric Silberstein</span>\n';
+    contactOutput += '<span class="text-blue-400">✉️ Email:</span> <a href="mailto:eric@randomstring.com" class="text-blue-300 hover:text-blue-200 underline">eric@randomstring.com</a>\n';
+    contactOutput += '<span class="text-purple-400">💼 LinkedIn:</span> <a href="https://linkedin.com/in/ericsilberstein" class="text-purple-300 hover:text-purple-200 underline" target="_blank">linkedin.com/in/ericsilberstein</a>\n';
+    contactOutput += '<span class="text-green-400">🐙 GitHub:</span> <a href="https://github.com/ericsilberstein1" class="text-green-300 hover:text-green-200 underline" target="_blank">github.com/ericsilberstein1</a>\n\n';
+
+    // Ezra's contact info
+    contactOutput += '<span class="text-cyan-400 font-bold text-lg">Ezra Freedman</span>\n';
+    contactOutput += '<span class="text-blue-400">✉️ Email:</span> <a href="mailto:ezra@randomstring.com" class="text-blue-300 hover:text-blue-200 underline">ezra@randomstring.com</a>\n';
+    contactOutput += '<span class="text-purple-400">💼 LinkedIn:</span> <a href="https://linkedin.com/in/ezrafreedman" class="text-purple-300 hover:text-purple-200 underline" target="_blank">linkedin.com/in/ezrafreedman</a>\n';
+    contactOutput += '<span class="text-green-400">🐙 GitHub:</span> <a href="https://github.com/ezra-freedman" class="text-green-300 hover:text-green-200 underline" target="_blank">github.com/ezra-freedman</a>';
+
+    terminalOutput.innerHTML += contactOutput;
+}
 
 // --- Dynamic Canvas Masking for Terminal ---
 
