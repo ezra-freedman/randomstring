@@ -138,7 +138,7 @@ async function loadArticle(postIndex) {
 
 // Display blog list with clickable links
 function displayBlogList() {
-    let postsOutput = '\n';
+    let postsOutput = '<div style="line-height: 1.7;">';
     blogPosts.slice(0, 6).forEach((post, index) => {
         const date = new Date(post.date).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -149,16 +149,21 @@ function displayBlogList() {
         // Alternate colors for visual interest
         const dateColor = index % 3 === 0 ? 'text-cyan-400' : index % 3 === 1 ? 'text-blue-400' : 'text-purple-400';
         const titleColor = 'text-white font-bold';
-        const subtitleColor = 'text-gray-400';
-        const authorColor = index % 2 === 0 ? 'text-green-400' : 'text-yellow-400';
+        const subtitleColor = 'text-gray-500 opacity-70';
+        const authorColor = index % 2 === 0 ? 'text-green-400 opacity-60' : 'text-yellow-400 opacity-60';
 
+        postsOutput += `<div style="margin-bottom: 3rem;">`;
         postsOutput += `<span class="${dateColor}">▸ ${date}</span>\n`;
-        postsOutput += `<span class="${titleColor} hover:text-blue-300 cursor-pointer transition-colors article-link" data-article="${index}">${post.title}</span>\n`;
+        postsOutput += `<div class="article-link cursor-pointer group" data-article="${index}" style="display: inline-block;">`;
+        postsOutput += `<span class="${titleColor} group-hover:text-blue-300 transition-colors">${post.title}</span>\n`;
         if (post.subtitle) {
-            postsOutput += `<span class="${subtitleColor}">${post.subtitle}</span>\n`;
+            postsOutput += `<span class="${subtitleColor} group-hover:text-gray-400 transition-colors">${post.subtitle}</span>`;
         }
-        postsOutput += `<span class="${authorColor}">by ${post.author}</span> <span class="text-gray-500">· ${post.readTime}</span>\n\n`;
+        postsOutput += `</div>\n`;
+        postsOutput += `<span class="${authorColor}">by ${post.author}</span> <span class="text-gray-600 opacity-50">· ${post.readTime}</span>`;
+        postsOutput += `</div>`;
     });
+    postsOutput += '</div>';
 
     terminalOutput.innerHTML += postsOutput;
 
@@ -166,7 +171,7 @@ function displayBlogList() {
     setTimeout(() => {
         document.querySelectorAll('.article-link').forEach(link => {
             link.addEventListener('click', (e) => {
-                const articleIndex = parseInt(e.target.dataset.article);
+                const articleIndex = parseInt(e.currentTarget.dataset.article);
                 loadArticle(articleIndex);
             });
         });

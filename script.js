@@ -352,3 +352,26 @@ if (colorPicker) {
         STRING_COLOR = `rgba(${r}, ${g}, ${b}, 0.7)`;
     });
 }
+
+// Length slider functionality
+const lengthSlider = document.getElementById('length-slider');
+if (lengthSlider) {
+    // Set up slider range based on current stick length
+    const defaultLength = STICK_LENGTH;
+    lengthSlider.min = 1;
+    lengthSlider.max = defaultLength * 2;
+    lengthSlider.value = defaultLength;
+
+    // Update stick length when slider changes
+    lengthSlider.addEventListener('input', (e) => {
+        const newLength = parseFloat(e.target.value);
+        const ratio = newLength / STICK_LENGTH;
+
+        // Scale all existing sticks proportionally
+        for (const stick of sticks) {
+            stick.length *= ratio;
+        }
+
+        STICK_LENGTH = newLength;
+    });
+}
