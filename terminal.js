@@ -14,11 +14,10 @@ let currentArticle = null;
 
 // Available commands
 const commands = {
-    '/help': 'Available commands:\n  /help     - Show this message\n  /about    - Learn about randomstring\n  /contact  - Display contact information\n  /posts    - View blog posts\n  /back     - Go back to blog list (when reading an article)\n  /spawn    - Spawn a new random string\n  /clear    - Clear the terminal output',
-    '/about': 'randomstring is an interactive physics-based string simulation.\n\nClick anywhere to spawn new strings. Drag endpoints to connect them.\nStrings automatically join when endpoints get close enough.\n\nBuilt with vanilla JavaScript and HTML5 Canvas.',
+    '/help': 'Available commands:\n  /help     - Show this message\n  /about    - Learn about randomstring\n  /contact  - Display contact information\n  /links    - Things we\'ve built, written, or find interesting\n  /spawn    - Spawn a new random string\n  /clear    - Clear the terminal output',
+    '/about': '',
     '/contact': '',
-    '/posts': '',
-    '/back': '',
+    '/links': '',
     '/spawn': '',
     '/clear': ''
 };
@@ -40,22 +39,12 @@ function processCommand(command) {
         const y = Math.random() * height * 0.8 + height * 0.1;
         spawnString(x, y);
         terminalOutput.innerHTML += `<span class="text-gray-300">String spawned at (${Math.round(x)}, ${Math.round(y)})</span>`;
-    } else if (cmd === '/back') {
-        if (currentView === 'article') {
-            currentView = 'list';
-            currentArticle = null;
-            // Re-run /posts command
-            processCommand('/posts');
-            // Update canvas mask to potentially show gradient again
-            updateCanvasMask();
-            return;
-        } else {
-            terminalOutput.innerHTML += `<span class="text-yellow-500">You're already at the blog list. Use /posts to see posts.</span>`;
-        }
-    } else if (cmd === '/posts') {
+    } else if (cmd === '/links') {
         currentView = 'list';
         currentArticle = null;
-        displayBlogList();
+        displayLinksList();
+    } else if (cmd === '/about') {
+        displayAboutInfo();
     } else if (cmd === '/contact') {
         displayContactInfo();
     } else if (commands[cmd]) {
@@ -199,9 +188,9 @@ function triggerCommand(command) {
 }
 
 // Wire up navigation links
-document.getElementById('posts-link').addEventListener('click', (e) => {
+document.getElementById('links-link').addEventListener('click', (e) => {
     e.preventDefault();
-    triggerCommand('/posts');
+    triggerCommand('/links');
 });
 
 document.getElementById('about-link').addEventListener('click', (e) => {
@@ -216,6 +205,30 @@ document.getElementById('contact-link').addEventListener('click', (e) => {
 
 // Focus the input field on page load
 terminalInput.focus();
+
+// Display about information
+function displayAboutInfo() {
+    let output = '<div style="padding-top: 2rem; line-height: 1.8;">';
+    output += '<span class="text-gray-400">> /about</span>\n\n';
+
+    // Big tagline
+    output += '<span class="text-white text-2xl font-bold">Randomstring</span>\n';
+    output += '<span class="text-cyan-400 text-xl font-bold">advises</span> · <span class="text-purple-400 text-xl font-bold">invests</span> · <span class="text-green-400 text-xl font-bold">builds</span>\n\n';
+
+    // Partners section
+    output += '<span class="text-gray-300 text-lg">Partners <span class="text-white font-bold">Eric Silberstein</span> and <span class="text-white font-bold">Ezra Freedman</span></span>\n\n';
+
+    // Story
+    output += '<span class="text-gray-400">Co-founded <span class="text-cyan-300">TrialNetworks</span> <span class="text-gray-500">(acquired by IQVIA)</span></span>\n';
+    output += '<span class="text-gray-400">Helped shape <span class="text-purple-300">Klaviyo</span>, joining to start the data science team and supporting the company through <span class="text-green-300">IPO</span></span>\n\n';
+
+    // Fun fact
+    output += '<span class="text-gray-500">They both started coding in BASIC on the Atari 400.</span>';
+
+    output += '</div>';
+
+    terminalOutput.innerHTML = output;
+}
 
 // Display contact information
 function displayContactInfo() {
