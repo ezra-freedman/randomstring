@@ -144,10 +144,17 @@ terminalInput.addEventListener('keydown', (e) => {
 
 // Navigation Link Handlers for typing effect
 function triggerCommand(command) {
-    // Focus the input first (skip on touch devices to avoid scroll jump)
-    if (!isTouchDevice()) {
-        terminalInput.focus();
+    // On touch devices, skip animation and just execute
+    if (isTouchDevice()) {
+        processCommand(command);
+        commandHistory.push(command);
+        historyIndex = -1;
+        currentInput = '';
+        return;
     }
+
+    // Focus the input first
+    terminalInput.focus();
 
     // Clear any existing content in the input
     terminalInput.value = '';
