@@ -10,7 +10,7 @@ const links = [
     "title": "Simon Willison's Blog",
     "description": "One of the best blogs for keeping current on AI for coding. Willison was one of the creators of Django.",
     "url": "https://simonwillison.net/",
-    "author": "Ezra"
+    "author": "Eric"
   },
   {
     "title": "IQVIA Investigator Site Portal",
@@ -46,7 +46,7 @@ const links = [
     "title": "App Tracking Transparency and eCommerce Ads",
     "description": "A few years ago the thing everyone in online advertising was talking about was how Apple's ATT had made ads less effective. This post was me trying to understand what ATT was all about at a technical level.",
     "url": "https://klaviyo.tech/app-tracking-transparency-and-ecommerce-ads-4af3139a3916",
-    "author": "Ezra"
+    "author": "Eric"
   },
   {
     "title": "Trying out DALL·E 2",
@@ -70,7 +70,7 @@ const links = [
     "title": "Two Truths and a Lie at Klaviyo",
     "description": "",
     "url": "https://klaviyo.tech/two-truths-and-a-lie-at-klaviyo-513903c8abac",
-    "author": "Eric & Ezra"
+    "author": "Ezra"
   },
   {
     "title": "When to pivot",
