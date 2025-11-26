@@ -144,8 +144,10 @@ terminalInput.addEventListener('keydown', (e) => {
 
 // Navigation Link Handlers for typing effect
 function triggerCommand(command) {
-    // Focus the input first (preventScroll to avoid jumping on mobile)
-    terminalInput.focus({ preventScroll: true });
+    // Focus the input first (skip on touch devices to avoid scroll jump)
+    if (!isTouchDevice()) {
+        terminalInput.focus();
+    }
 
     // Clear any existing content in the input
     terminalInput.value = '';
@@ -203,8 +205,10 @@ document.getElementById('contact-link').addEventListener('click', (e) => {
     triggerCommand('/contact');
 });
 
-// Focus the input field on page load
-terminalInput.focus({ preventScroll: true });
+// Focus the input field on page load (skip on touch devices)
+if (!isTouchDevice()) {
+    terminalInput.focus();
+}
 
 // Display about information
 function displayAboutInfo() {

@@ -13,6 +13,11 @@ let STRING_COLOR = 'rgba(255, 255, 255, 0.7)';
 const STRING_WIDTH = 1.5;
 // ---------------------
 
+// Check if touch device (used across multiple files)
+function isTouchDevice() {
+    return window.matchMedia('(pointer: coarse)').matches;
+}
+
 let width, height;
 
 function calculateStickLength() {
@@ -319,8 +324,10 @@ canvas.addEventListener('mouseup', (e) => {
         canvas.style.cursor = nearPoint ? 'grab' : 'default';
     }
 
-    // Return focus to terminal input (preventScroll to avoid jumping on mobile)
-    terminalInput.focus({ preventScroll: true });
+    // Return focus to terminal input (skip on touch devices to avoid scroll jump)
+    if (!isTouchDevice()) {
+        terminalInput.focus();
+    }
 
     isDragging = false;
 });
