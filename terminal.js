@@ -144,8 +144,8 @@ terminalInput.addEventListener('keydown', (e) => {
 
 // Navigation Link Handlers for typing effect
 function triggerCommand(command) {
-    // Focus the input first
-    terminalInput.focus();
+    // Focus the input first (preventScroll to avoid jumping on mobile)
+    terminalInput.focus({ preventScroll: true });
 
     // Clear any existing content in the input
     terminalInput.value = '';
@@ -204,7 +204,7 @@ document.getElementById('contact-link').addEventListener('click', (e) => {
 });
 
 // Focus the input field on page load
-terminalInput.focus();
+terminalInput.focus({ preventScroll: true });
 
 // Display about information
 function displayAboutInfo() {

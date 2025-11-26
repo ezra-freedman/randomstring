@@ -319,8 +319,8 @@ canvas.addEventListener('mouseup', (e) => {
         canvas.style.cursor = nearPoint ? 'grab' : 'default';
     }
 
-    // Return focus to terminal input
-    terminalInput.focus();
+    // Return focus to terminal input (preventScroll to avoid jumping on mobile)
+    terminalInput.focus({ preventScroll: true });
 
     isDragging = false;
 });

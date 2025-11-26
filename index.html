@@ -22,11 +22,11 @@
     <!-- The minimalist UI overlay -->
     <div class="ui-container">
         <header class="flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <h1 class="text-2xl font-bold tracking-tighter text-gray-100">
+            <div class="flex items-center space-x-1 sm:space-x-3">
+                <h1 class="text-base sm:text-2xl font-bold tracking-tighter text-gray-100">
                     randomstring
                 </h1>
-                <input type="color" id="color-picker" value="#ffffff" list="color-presets" class="pointer-events-auto w-7 h-7 rounded border border-gray-700 bg-transparent cursor-pointer">
+                <input type="color" id="color-picker" value="#ffffff" list="color-presets" class="pointer-events-auto w-5 h-5 sm:w-7 sm:h-7 rounded border border-gray-700 bg-transparent cursor-pointer">
                 <datalist id="color-presets">
                     <option value="#ffffff">White</option>
                     <option value="#ff0000">Red</option>
@@ -39,12 +39,12 @@
                     <option value="#ff00ff">Magenta</option>
                     <option value="#ff69b4">Pink</option>
                 </datalist>
-                <input type="range" id="length-slider" class="pointer-events-auto w-20 h-2 cursor-pointer" style="accent-color: rgba(255, 255, 255, 0.5);">
+                <input type="range" id="length-slider" class="pointer-events-auto w-12 sm:w-20 h-2 cursor-pointer" style="accent-color: rgba(255, 255, 255, 0.5);">
             </div>
-            <nav class="flex space-x-6 pointer-events-auto">
-                <a href="#" id="about-link" class="text-sm text-gray-400 hover:text-gray-100 transition-colors">About</a>
-                <a href="#" id="links-link" class="text-sm text-gray-400 hover:text-gray-100 transition-colors">Links</a>
-                <a href="#" id="contact-link" class="text-sm text-gray-400 hover:text-gray-100 transition-colors">Contact</a>
+            <nav class="flex space-x-3 sm:space-x-6 pointer-events-auto">
+                <a href="#" id="about-link" class="text-xs sm:text-sm text-gray-400 hover:text-gray-100 transition-colors">About</a>
+                <a href="#" id="links-link" class="text-xs sm:text-sm text-gray-400 hover:text-gray-100 transition-colors">Links</a>
+                <a href="#" id="contact-link" class="text-xs sm:text-sm text-gray-400 hover:text-gray-100 transition-colors">Contact</a>
             </nav>
         </header>        
         <footer class="w-full">
