@@ -28,17 +28,17 @@ function processCommand(command) {
     let output = '';
 
     // Clear previous scrollback and echo the command
-    terminalOutput.innerHTML = `<span class="text-gray-400">> ${command}</span>\n`;
+    terminalOutput.innerHTML = `<span class="terminal-cmd text-gray-400">> ${command}</span>\n`;
 
     if (cmd === '/clear') {
-        terminalOutput.innerHTML = 'Terminal cleared.';
+        terminalOutput.innerHTML = '<span class="terminal-cmd">Terminal cleared.</span>';
         currentView = 'list';
     } else if (cmd === '/spawn') {
         // Spawn a string at a random location
         const x = Math.random() * width * 0.8 + width * 0.1;
         const y = Math.random() * height * 0.8 + height * 0.1;
         spawnString(x, y);
-        terminalOutput.innerHTML += `<span class="text-gray-300">String spawned at (${Math.round(x)}, ${Math.round(y)})</span>`;
+        terminalOutput.innerHTML += `<span class="terminal-cmd text-gray-300">String spawned at (${Math.round(x)}, ${Math.round(y)})</span>`;
     } else if (cmd === '/links') {
         currentView = 'list';
         currentArticle = null;
@@ -47,12 +47,21 @@ function processCommand(command) {
         displayAboutInfo();
     } else if (cmd === '/contact') {
         displayContactInfo();
+    } else if (cmd === '/help') {
+        output = `<div class="terminal-cmd text-gray-300" style="white-space: pre;">Available commands:
+  /help     - Show this message
+  /about    - Learn about randomstring
+  /contact  - Display contact information
+  /links    - Things we've built, written, or find interesting
+  /spawn    - Spawn a new random string
+  /clear    - Clear the terminal output</div>`;
+        terminalOutput.innerHTML += output;
     } else if (commands[cmd]) {
         output = commands[cmd];
-        terminalOutput.innerHTML += `<span class="text-gray-300">${output}</span>`;
+        terminalOutput.innerHTML += `<span class="terminal-cmd text-gray-300">${output}</span>`;
     } else {
         output = `Command not found: ${command}\nType /help for a list of commands.`;
-        terminalOutput.innerHTML += `<span class="text-yellow-500">${output}</span>`;
+        terminalOutput.innerHTML += `<span class="terminal-cmd text-yellow-500">${output}</span>`;
     }
 
     // Scroll to bottom (except for articles which should start at top)
@@ -219,45 +228,52 @@ if (!isTouchDevice()) {
 
 // Display about information
 function displayAboutInfo() {
-    let output = '<div style="padding-top: 2rem; line-height: 1.8;">';
-    output += '<span class="text-gray-400">> /about</span>\n\n';
+    let output = '<div style="padding-top: 1rem;">';
+    output += '<span class="terminal-cmd text-gray-400">> /about</span>\n\n';
 
+    output += '<div class="terminal-content">';
     // Big tagline
-    output += '<span class="text-white text-2xl font-bold">Randomstring</span>\n';
-    output += '<span class="text-cyan-400 text-xl font-bold">advises</span> · <span class="text-purple-400 text-xl font-bold">invests</span> · <span class="text-green-400 text-xl font-bold">builds</span>\n\n';
+    output += '<div class="text-white text-2xl font-bold" style="font-family: \'Inter\', sans-serif;">randomstring</div>';
+    output += '<div class="display-heading text-3xl mb-4"><span class="text-cyan-400">advises</span> · <span class="text-purple-400">invests</span> · <span class="text-green-400">builds</span></div>';
 
     // Partners section
-    output += '<span class="text-gray-300 text-lg">Partners <span class="text-white font-bold">Eric Silberstein</span> and <span class="text-white font-bold">Ezra Freedman</span></span>\n\n';
+    output += '<div class="text-gray-300 text-xl mb-4">Partners <span class="text-white font-semibold">Eric Silberstein</span> and <span class="text-white font-semibold">Ezra Freedman</span></div>';
 
     // Story
-    output += '<span class="text-gray-400">Co-founded <span class="text-cyan-300">TrialNetworks</span> <span class="text-gray-500">(acquired by IQVIA)</span></span>\n';
-    output += '<span class="text-gray-400">Helped shape <span class="text-purple-300">Klaviyo</span>, joining to start the data science team and supporting the company through <span class="text-green-300">IPO</span></span>\n\n';
+    output += '<div class="text-gray-400 mb-1" style="font-size: 1.0625rem;">Co-founded <span class="text-cyan-300">TrialNetworks</span> <span class="text-gray-500">(acquired by IQVIA)</span></div>';
+    output += '<div class="text-gray-400 mb-4" style="font-size: 1.0625rem;">Helped shape <span class="text-purple-300">Klaviyo</span>, joining to start the data science team and supporting the company through <span class="text-green-300">IPO</span></div>';
 
     // Fun fact
-    output += '<span class="text-gray-500">They both started coding in BASIC on the Atari 400.</span>';
-
-    output += '</div>';
+    output += '<div class="text-gray-400 mb-4" style="font-size: 1.0625rem;">They both started coding in BASIC on the Atari 400.</div>';
+    output += '</div></div>';
 
     terminalOutput.innerHTML = output;
 }
 
 // Display contact information
 function displayContactInfo() {
-    let contactOutput = '\n';
+    let output = '<div style="padding-top: 1rem;">';
+    output += '<span class="terminal-cmd text-gray-400">> /contact</span>\n\n';
+
+    output += '<div class="terminal-content">';
 
     // Eric's contact info
-    contactOutput += '<span class="text-cyan-400 font-bold text-lg">Eric Silberstein</span>\n';
-    contactOutput += '<span class="text-blue-400">✉️ Email:</span> <a href="mailto:eric@randomstring.com" class="text-blue-300 hover:text-blue-200 underline">eric@randomstring.com</a>\n';
-    contactOutput += '<span class="text-purple-400">💼 LinkedIn:</span> <a href="https://linkedin.com/in/ericsilberstein" class="text-purple-300 hover:text-purple-200 underline" target="_blank">linkedin.com/in/ericsilberstein</a>\n';
-    contactOutput += '<span class="text-green-400">🐙 GitHub:</span> <a href="https://github.com/ericsilberstein1" class="text-green-300 hover:text-green-200 underline" target="_blank">github.com/ericsilberstein1</a>\n\n';
+    output += '<div class="mb-6">';
+    output += '<div class="display-heading text-white text-2xl mb-2">Eric Silberstein</div>';
+    output += '<div class="mb-1" style="font-size: 1.0625rem;"><span class="text-gray-400">Email:</span> <a href="mailto:eric@randomstring.com" class="text-blue-300 hover:text-blue-200">eric@randomstring.com</a></div>';
+    output += '<div style="font-size: 1.0625rem;"><span class="text-gray-400">LinkedIn:</span> <a href="https://linkedin.com/in/ericsilberstein" class="text-purple-300 hover:text-purple-200" target="_blank">linkedin.com/in/ericsilberstein</a></div>';
+    output += '</div>';
 
     // Ezra's contact info
-    contactOutput += '<span class="text-cyan-400 font-bold text-lg">Ezra Freedman</span>\n';
-    contactOutput += '<span class="text-blue-400">✉️ Email:</span> <a href="mailto:ezra@randomstring.com" class="text-blue-300 hover:text-blue-200 underline">ezra@randomstring.com</a>\n';
-    contactOutput += '<span class="text-purple-400">💼 LinkedIn:</span> <a href="https://linkedin.com/in/ezrafreedman" class="text-purple-300 hover:text-purple-200 underline" target="_blank">linkedin.com/in/ezrafreedman</a>\n';
-    contactOutput += '<span class="text-green-400">🐙 GitHub:</span> <a href="https://github.com/ezra-freedman" class="text-green-300 hover:text-green-200 underline" target="_blank">github.com/ezra-freedman</a>';
+    output += '<div class="mb-8">';
+    output += '<div class="display-heading text-white text-2xl mb-2">Ezra Freedman</div>';
+    output += '<div class="mb-1" style="font-size: 1.0625rem;"><span class="text-gray-400">Email:</span> <a href="mailto:ezra@randomstring.com" class="text-blue-300 hover:text-blue-200">ezra@randomstring.com</a></div>';
+    output += '<div style="font-size: 1.0625rem;"><span class="text-gray-400">LinkedIn:</span> <a href="https://linkedin.com/in/ezrafreedman" class="text-purple-300 hover:text-purple-200" target="_blank">linkedin.com/in/ezrafreedman</a></div>';
+    output += '</div>';
 
-    terminalOutput.innerHTML += contactOutput;
+    output += '</div></div>';
+
+    terminalOutput.innerHTML = output;
 }
 
 // --- Dynamic Canvas Masking for Terminal ---

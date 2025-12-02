@@ -83,36 +83,40 @@ const links = [
 // Display links list
 function displayLinksList() {
     // Replace terminal content entirely with padded container
-    let output = '<div style="line-height: 1.7; padding-top: 2rem;">';
-    output += '<span class="text-gray-400">> /links</span>\n\n';
-    output += '<span class="text-white font-bold text-lg">Things we\'ve built, written, or find interesting.</span>\n\n';
+    let output = '<div style="padding-top: 1rem;">';
+    output += '<span class="terminal-cmd text-gray-400">> /links</span>\n\n';
+    output += '<div class="terminal-content">';
+    output += '<div class="display-heading text-white text-3xl mb-6">Things we\'ve built, written, or find interesting</div>';
 
     links.forEach((link, index) => {
-        // Styling
-        const descColor = 'text-gray-300';
         const authorColors = {
-            'Eric': 'text-green-400 opacity-70',
-            'Ezra': 'text-blue-400 opacity-70',
-            'Eric & Ezra': 'text-purple-400 opacity-70'
+            'Eric': 'text-green-400',
+            'Ezra': 'text-blue-400',
+            'Eric & Ezra': 'text-purple-400'
         };
-        const authorColor = authorColors[link.author] || 'text-gray-400 opacity-70';
-
-        output += `<div style="margin-bottom: 2.5rem;">`;
+        const authorColor = authorColors[link.author] || 'text-gray-500';
 
         if (link.url) {
-            output += `<a href="${link.url}" target="_blank" class="font-bold text-cyan-400 visited:text-purple-400 hover:text-cyan-300 transition-colors underline">${link.title}</a>`;
+            output += `<a href="${link.url}" target="_blank" class="link-card">`;
         } else {
-            output += `<span class="text-white font-bold">${link.title}</span>`;
+            output += `<div class="link-card">`;
         }
+
+        output += `<div class="link-title text-cyan-400">${link.title}</div>`;
 
         if (link.description) {
-            output += `\n<span class="${descColor}">${link.description}</span>`;
+            output += `<div class="link-desc">${link.description}</div>`;
         }
-        output += `\n<span class="${authorColor}">— ${link.author}</span>`;
-        output += `</div>`;
+        output += `<div class="link-author ${authorColor}" style="opacity: 0.7;">${link.author}</div>`;
+
+        if (link.url) {
+            output += `</a>`;
+        } else {
+            output += `</div>`;
+        }
     });
 
-    output += '</div>';
+    output += '</div></div>';
     terminalOutput.innerHTML = output;
 
     // Scroll to top after render
